@@ -1,4 +1,3 @@
-# PuzzleGame
 # Puzzle game - 8 Puzzle Problem</br>
 # Το πρόβλημα των 8 γρίφων</br>
 Το πρόβλημα των 8 γρίφων είναι ένα παζλ που εφευρέθηκε και διαδόθηκε από τον Noyes Palmer Chapman τη δεκαετία του 1870. </br>
