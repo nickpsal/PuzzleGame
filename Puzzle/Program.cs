@@ -7,26 +7,40 @@ namespace Puzzle
         public static void Main(string[] args)
         {
             //initialize puzzle
-            //testing
-            int[,] quizTiles = { 
-                { 1, 2, 3 }, 
-                { 8, 0, 4 }, 
-                { 7, 6, 5 } 
-            };
-            //initialize
-            //int[,] quizTiles = new int[3, 3];
-            Puzzle puzzle = new Puzzle(quizTiles);
+            Console.WriteLine("Ο Υπολογισμός για την Επίληση του <<Το πρόβλημα των 8 γρίφων>> ξεκίνησε......");
             //fill the tile with random number 0 - 8
-            //puzzle.FillPuzzle();
-            //print initial State of puzzle
-            Console.WriteLine("Initial State:");
-            puzzle.PrintBoard();
-            foreach(string move in puzzle.AvailableMoves())
+            //int[,] initialState = FillPuzzle();
+            int[,] initialState = FillPuzzle();
+            Puzzle puzzle = new Puzzle(initialState);
+            puzzle.IDAStarSearch();
+        }
+
+        public static int[,] FillPuzzle()
+        {
+            int[,] initialState = new int[3, 3];
+            Random rand = new Random();
+            // Fill the puzzle with numbers 0 to 8
+            for (int i = 0; i < 3; i++)
             {
-                Console.WriteLine(move);
+                for (int j = 0; j < 3; j++)
+                {
+                    initialState[i, j] = i * 3 + j;
+                }
             }
-            puzzle.SwapTiles(puzzle.AvailableMoves()[0]);
-            puzzle.PrintBoard();
+            // Shuffle the puzzle by swapping elements
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    int randRow = rand.Next(3);
+                    int randCol = rand.Next(3);
+                    // Swap elements
+                    int temp = initialState[i, j];
+                    initialState[i, j] = initialState[randRow, randCol];
+                    initialState[randRow, randCol] = temp;
+                }
+            }
+            return initialState;
         }
     }
 }

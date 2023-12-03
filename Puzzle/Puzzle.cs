@@ -3,143 +3,227 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace Puzzle
 {
     public class Puzzle
     {
-        private readonly int[,] goalBoard1 = { { 1, 2, 3 }, { 4, 5, 6 }, { 7, 8, 0 } };
-        private readonly int[,] goalBoard2 = { { 0, 1, 2 }, { 3, 4, 5 }, { 6, 7, 8 } };
-        public int[,] board { get; set; }
+        private static readonly int[,] goalState1 = { { 1, 2, 3 }, { 4, 5, 6 }, { 7, 8, 0 } };
+        private static readonly int[,] goalState2 = { { 0, 1, 2 }, { 3, 4, 5 }, { 6, 7, 8 } };
+        public int[,] initialState { get; set; }
         public int emptyRow { get; set; }
         public int emptyCol { get; set; }
-
-        public Puzzle(int[,] board)
+        public int[] directions = { -3, -1, 1, 3 }; // Possible moves: Up, Left, Right, Down
+        private Dictionary<string, int> memoizedHeuristics = new Dictionary<string, int>();
+        public Puzzle(int[,] initialState)
         {
-            this.board = board;
+            this.initialState = initialState;
         }
 
-        public void findEmpty()
+        public void IDAStarSearch()
+        {
+            int cost = CalculateHeuristic(initialState);
+            Node root = new Node(initialState, cost, 0, null);
+
+            int threshold = cost;
+            while (true)
+            {
+                int result = DepthLimitedSearch(root, threshold);
+                if (result == int.MaxValue)
+                {
+                    Console.WriteLine("Solution not found!");
+                    return;
+                }
+                if (result < 0)
+                {
+                    Console.WriteLine("Solution found!");
+                    return;
+                }
+                threshold = result;
+            }
+        }
+
+        private string StateToString(int[,] state)
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < state.GetLength(0); i++)
+            {
+                for (int j = 0; j < state.GetLength(1); j++)
+                {
+                    sb.Append(state[i, j]);
+                    sb.Append(','); // Add a delimiter to distinguish between elements
+                }
+            }
+            return sb.ToString();
+        }
+
+        private int DepthLimitedSearch(Node node, int threshold)
+        {
+            int f = node.Depth + CalculateHeuristic(node.State);
+            if (f > threshold)
+                return f;
+
+            if (IsGoalState(node.State))
+            {
+                PrintSolution(node);
+                return -1; // Found solution
+            }
+
+            int min = int.MaxValue;
+            foreach (var move in GetPossibleMoves(node.State))
+            {
+                int[,] newState = Swap(node.State, move);
+                int cost = node.Depth + 1 + CalculateHeuristic(newState);
+                Node child = new Node(newState, cost, node.Depth + 1, node);
+                int result = DepthLimitedSearch(child, threshold);
+
+                if (result == -1)
+                    return -1; // Solution found
+
+                if (result < min)
+                    min = result;
+            }
+
+            return min;
+        }
+
+        private int GetMemoizedHeuristic(int[,] state)
+        {
+            string stateString = StateToString(state);
+            if (memoizedHeuristics.TryGetValue(stateString, out int cachedHeuristic))
+            {
+                return cachedHeuristic;
+            }
+            return -1; // Return a value indicating that the heuristic is not memoized
+        }
+
+        // New method to store the memoized heuristic value for a state
+        private void MemoizeHeuristic(int[,] state, int heuristicValue)
+        {
+            string stateString = StateToString(state);
+            memoizedHeuristics[stateString] = heuristicValue;
+        }
+
+        private int CalculateHeuristic(int[,] state)
+        {
+            int h = 0;
+            int memoizedHeuristic = GetMemoizedHeuristic(state);
+            if (memoizedHeuristic != -1)
+            {
+                return memoizedHeuristic;
+            }
+            for (int i = 0; i < state.GetLength(0); i++)
+            {
+                for (int j = 0; j < state.GetLength(1); j++)
+                {
+                    if (state[i, j] != goalState1[i, j] && state[i, j] != goalState2[i, j] && state[i, j] != 0)
+                        h++;
+                }
+            }
+            MemoizeHeuristic(state, h); // Store the calculated heuristic value
+            return h;
+        }
+
+        private bool IsGoalState(int[,] state)
+        {
+            for (int i = 0; i < state.GetLength(0); i++)
+            {
+                for (int j = 0; j < state.GetLength(1); j++)
+                {
+                    if (state[i, j] != goalState1[i, j] && state[i, j] != goalState2[i, j])
+                        return false;
+                }
+            }
+            return true;
+        }
+
+        private IEnumerable<int[]> GetPossibleMoves(int[,] state)
         {
             for (int row = 0; row < 3; row++)
             {
                 for (int col = 0; col < 3; col++)
                 {
-                    if (board[row, col] == 0)
+                    if (state[row, col] == 0)
                     {
                         emptyRow = row;
                         emptyCol = col;
                     }
                 }
             }
+
+            foreach (var direction in directions)
+            {
+                int newI = emptyRow + direction / state.GetLength(1);
+                int newJ = emptyCol + direction % state.GetLength(1);
+
+                if (newI >= 0 && newI < state.GetLength(0) && newJ >= 0 && newJ < state.GetLength(1))
+                    yield return new int[] { newI, newJ };
+            }
         }
 
-        public void PrintBoard()
+        private int[,] Swap(int[,] state, int[] newIndex)
         {
-            for (int row = 0; row < 3; row++)
+            int[,] newState = (int[,])state.Clone();
+            int zeroIndexI = -1;
+            int zeroIndexJ = -1;
+
+            for (int i = 0; i < newState.GetLength(0); i++)
             {
-                for (int col = 0; col < 3; col++)
+                for (int j = 0; j < newState.GetLength(1); j++)
                 {
-                    Console.Write($"{board[row, col]}    ");
+                    if (newState[i, j] == 0)
+                    {
+                        zeroIndexI = i;
+                        zeroIndexJ = j;
+                        break;
+                    }
+                }
+                if (zeroIndexI != -1)
+                    break;
+            }
+
+            newState[zeroIndexI, zeroIndexJ] = newState[newIndex[0], newIndex[1]];
+            newState[newIndex[0], newIndex[1]] = 0;
+
+            return newState;
+        }
+
+        private void PrintSolution(Node node)
+        {
+            List<Node> path = new List<Node>();
+            while (node != null)
+            {
+                path.Add(node);
+                node = node.Parent;
+            }
+
+            for (int i = path.Count - 1; i >= 0; i--)
+            {
+                if (path.Count - i - 1 == 0)
+                {
+                    Console.WriteLine($"Initial State:");
+                    PrintState(path[i].State);
+                }
+                else
+                {
+                    Console.WriteLine($"Step {path.Count - i - 1}:");
+                    PrintState(path[i].State);
+                }
+            }
+        }
+
+        private void PrintState(int[,] state)
+        {
+            for (int i = 0; i < state.GetLength(0); i++)
+            {
+                for (int j = 0; j < state.GetLength(1); j++)
+                {
+                    Console.Write(state[i, j] == 0 ? "  " : state[i, j] + " ");
                 }
                 Console.WriteLine();
             }
-        }
-
-        public  void FillPuzzle()
-        {
-            int[,] tiles = new int[3, 3];
-            Random rand = new Random();
-            //List with all the number 0 to 8
-            List<int> numbers = new() { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
-            //shuffle the list
-            numbers = numbers.OrderBy(x => rand.Next()).ToList();
-            //fill the Quiz with shuffled numbers
-            for (int i = 0; i < 3; i++)
-            {
-                for (int j = 0; j < 3; j++)
-                {
-                    board[i, j] = numbers[i * 3 + j];
-                }
-            }
-        }
-
-        public List<string> AvailableMoves()
-        {
-            List<string> AMoves = new();
-            //available moves
-            // u = up
-            // d = down
-            // l = left
-            // r = right
-            findEmpty();
-            if (emptyRow > 0 && emptyRow < 2)
-            {
-                AMoves.Add("u");
-                AMoves.Add("d");
-            }
-            if (emptyCol > 0 && emptyCol < 2)
-            {
-                AMoves.Add("l");
-                AMoves.Add("r");
-            }
-            if (emptyCol == 0)
-            {
-                AMoves.Add("r");
-            }
-            if (emptyRow == 0)
-            {
-                AMoves.Add("d");
-            }
-            if (emptyCol == 2)
-            {
-                AMoves.Add("l");
-            }
-            if (emptyRow == 2)
-            {
-                AMoves.Add("u");
-            }
-            return AMoves;
-        }
-
-        public void SwapTiles(string move)
-
-        {
-            findEmpty();
-            switch (move)
-            {
-                case "u":
-                    board[emptyRow, emptyCol] = board[emptyRow - 1, emptyCol];
-                    board[--emptyRow, emptyCol] = 0;
-                    break;
-                case "d":
-                    board[emptyRow, emptyCol] = board[emptyRow + 1, emptyCol];
-                    board[++emptyRow, emptyCol] = 0;
-                    break;
-                case "l":
-                    board[emptyRow, emptyCol] = board[emptyRow, emptyCol - 1];
-                    board[emptyRow, --emptyCol] = 0;
-                    break;
-                case "r":
-                    board[emptyRow, emptyCol] = board[emptyRow, emptyCol + 1];
-                    board[emptyRow, ++emptyCol] = 0;
-                    break;
-            }
-        }
-
-        public bool IsSolved()
-        {
-            for (int row = 0; row < 3; row++)
-            {
-                for (int col = 0; col < 3; col++)
-                {
-                    if (board[row, col] != goalBoard1[row, col] && board[row, col] != goalBoard2[row, col])
-                    {
-                        return false;
-                    }
-                } 
-            }
-            return true;
+            Console.WriteLine();
         }
     }
 }
