@@ -7,6 +7,7 @@ using System.Xml.Linq;
 
 namespace Puzzle
 {
+    // Puzzle class contains the logic for solving the 8-puzzle using IDA* search
     public class Puzzle
     {
         private static readonly int[,] goalState1 = { { 1, 2, 3 }, { 4, 5, 6 }, { 7, 8, 0 } };
@@ -16,11 +17,14 @@ namespace Puzzle
         public int emptyCol { get; set; }
         public int[] directions = { -3, -1, 1, 3 }; // Possible moves: Up, Left, Right, Down
         private Dictionary<string, int> memoizedHeuristics = new Dictionary<string, int>();
+
+        // Constructor initializes the initial state of the puzzle
         public Puzzle(int[,] initialState)
         {
             this.initialState = initialState;
         }
 
+        // IDA* search algorithm
         public void IDAStarSearch()
         {
             int cost = CalculateHeuristic(initialState);
@@ -29,6 +33,7 @@ namespace Puzzle
             int threshold = cost;
             while (true)
             {
+                Console.WriteLine($"Τρέχον Βάρος Βαση Απόστασης απο την Τελική Θέση: {threshold}");
                 int result = DepthLimitedSearch(root, threshold);
                 if (result == int.MaxValue)
                 {
@@ -44,6 +49,7 @@ namespace Puzzle
             }
         }
 
+        // Converts the state array to a string for memoization
         private string StateToString(int[,] state)
         {
             StringBuilder sb = new StringBuilder();
@@ -58,6 +64,7 @@ namespace Puzzle
             return sb.ToString();
         }
 
+        // Depth-limited search within a specified threshold
         private int DepthLimitedSearch(Node node, int threshold)
         {
             int f = node.Depth + CalculateHeuristic(node.State);
@@ -88,6 +95,7 @@ namespace Puzzle
             return min;
         }
 
+        // Gets the memoized heuristic value for a state
         private int GetMemoizedHeuristic(int[,] state)
         {
             string stateString = StateToString(state);
@@ -98,13 +106,14 @@ namespace Puzzle
             return -1; // Return a value indicating that the heuristic is not memoized
         }
 
-        // New method to store the memoized heuristic value for a state
+        // Memoizes the heuristic value for a state
         private void MemoizeHeuristic(int[,] state, int heuristicValue)
         {
             string stateString = StateToString(state);
             memoizedHeuristics[stateString] = heuristicValue;
         }
 
+        // Calculates the heuristic value for a state
         private int CalculateHeuristic(int[,] state)
         {
             int h = 0;
@@ -125,6 +134,7 @@ namespace Puzzle
             return h;
         }
 
+        // Checks if a state is the goal state
         private bool IsGoalState(int[,] state)
         {
             for (int i = 0; i < state.GetLength(0); i++)
@@ -138,6 +148,7 @@ namespace Puzzle
             return true;
         }
 
+        // Generates possible moves for the empty tile
         private IEnumerable<int[]> GetPossibleMoves(int[,] state)
         {
             for (int row = 0; row < 3; row++)
@@ -162,6 +173,7 @@ namespace Puzzle
             }
         }
 
+        // Swaps the empty tile with a neighboring tile
         private int[,] Swap(int[,] state, int[] newIndex)
         {
             int[,] newState = (int[,])state.Clone();
@@ -189,6 +201,7 @@ namespace Puzzle
             return newState;
         }
 
+        // Prints the solution path
         private void PrintSolution(Node node)
         {
             List<Node> path = new List<Node>();
@@ -200,7 +213,7 @@ namespace Puzzle
 
             for (int i = path.Count - 1; i >= 0; i--)
             {
-                if (path.Count - i - 1 == 0)
+                if (path.Count - i - 1 != 0)
                 {
                     Console.WriteLine($"Initial State:");
                     PrintState(path[i].State);
@@ -213,6 +226,7 @@ namespace Puzzle
             }
         }
 
+        // Prints the current state of the puzzle
         private void PrintState(int[,] state)
         {
             for (int i = 0; i < state.GetLength(0); i++)

@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Puzzle
 {
-    internal class Node: IComparable<Node>
+    // Node class represents a state in the puzzle along with its properties
+    public class Node
     {
         public int[,] State { get; }
         public int Cost { get; }
