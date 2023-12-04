@@ -13,6 +13,8 @@ namespace Puzzle
             int[,] initialState = FillPuzzle();
             Puzzle puzzle = new Puzzle(initialState);
             puzzle.IDAStarSearch();
+            //prommt to when to press any key for not closing the window after finishing
+            Console.Read();
         }
 
         public static int[,] FillPuzzle()

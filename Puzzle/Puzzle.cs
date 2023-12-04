@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,6 +8,7 @@ using System.Xml.Linq;
 
 namespace Puzzle
 {
+    [TestClass]
     // Puzzle class contains the logic for solving the 8-puzzle using IDA* search
     public class Puzzle
     {
@@ -25,6 +27,7 @@ namespace Puzzle
         }
 
         // IDA* search algorithm
+        [TestMethod]
         public void IDAStarSearch()
         {
             int cost = CalculateHeuristic(initialState);
