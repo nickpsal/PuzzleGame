@@ -8,7 +8,8 @@ namespace Puzzle
         {
             //initialize puzzle
             Console.WriteLine("Ο Υπολογισμός για την Επίληση του <<Το πρόβλημα των 8 γρίφων>> ξεκίνησε......");
-            Console.WriteLine("Υπολογισμός Βάρους κάθε Κίνηση με Βάση την Απόσταση απο την πραγματική Θέση που΄πρέπει να είναι ο Αριθμός");
+            Console.WriteLine("-----------------------------------------------------------------------------");
+            Console.WriteLine("Υπολογισμός Βάρους κάθε Κίνηση με Βάση την Απόσταση απο την πραγματική Θέση που πρέπει να είναι ο Αριθμός");
             //fill the tile with random number 0 - 8
             int[,] initialState = FillPuzzle();
             Puzzle puzzle = new Puzzle(initialState);
