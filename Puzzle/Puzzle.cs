@@ -216,7 +216,7 @@ namespace Puzzle
 
             for (int i = path.Count - 1; i >= 0; i--)
             {
-                if (path.Count - i - 1 != 0)
+                if (path.Count - i - 1 == 0)
                 {
                     Console.WriteLine($"Initial State:");
                     PrintState(path[i].State);
