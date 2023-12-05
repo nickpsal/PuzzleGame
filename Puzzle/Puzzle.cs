@@ -1,10 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace Puzzle
 {
@@ -21,9 +16,42 @@ namespace Puzzle
         private Dictionary<string, int> memoizedHeuristics = new Dictionary<string, int>();
 
         // Constructor initializes the initial state of the puzzle
-        public Puzzle(int[,] initialState)
+        public Puzzle()
         {
-            this.initialState = initialState;
+            Console.WriteLine("Ο Υπολογισμός για την Επίληση του <<Το πρόβλημα των 8 γρίφων>> ξεκίνησε......");
+            Console.WriteLine("-----------------------------------------------------------------------------");
+            Console.WriteLine("Υπολογισμός Βάρους κάθε Κίνηση με Βάση την Απόσταση απο την πραγματική Θέση που πρέπει να είναι ο Αριθμός");
+            //fill the tile with random number 0 - 8
+            this.initialState = FillPuzzle();
+            IDAStarSearch();
+        }
+
+        public int[,] FillPuzzle()
+        {
+            int[,] initialState = new int[3, 3];
+            Random rand = new Random();
+            // Fill the puzzle with numbers 0 to 8
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    initialState[i, j] = i * 3 + j;
+                }
+            }
+            // Shuffle the puzzle by swapping elements
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    int randRow = rand.Next(3);
+                    int randCol = rand.Next(3);
+                    // Swap elements
+                    int temp = initialState[i, j];
+                    initialState[i, j] = initialState[randRow, randCol];
+                    initialState[randRow, randCol] = temp;
+                }
+            }
+            return initialState;
         }
 
         // IDA* search algorithm
