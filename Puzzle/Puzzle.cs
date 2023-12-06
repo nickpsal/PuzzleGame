@@ -7,8 +7,8 @@ namespace Puzzle
     // Puzzle class contains the logic for solving the 8-puzzle using IDA* search
     public class Puzzle
     {
-        private static readonly int[,] goalState1 = { { 1, 2, 3 }, { 4, 5, 6 }, { 7, 8, 0 } };
-        private static readonly int[,] goalState2 = { { 0, 1, 2 }, { 3, 4, 5 }, { 6, 7, 8 } };
+        private readonly int[,] goalState1 = { { 1, 2, 3 }, { 4, 5, 6 }, { 7, 8, 0 } };
+        private readonly int[,] goalState2 = { { 0, 1, 2 }, { 3, 4, 5 }, { 6, 7, 8 } };
         public int[,] initialState { get; set; }
         public int emptyRow { get; set; }
         public int emptyCol { get; set; }
@@ -18,15 +18,16 @@ namespace Puzzle
         // Constructor initializes the initial state of the puzzle
         public Puzzle()
         {
-            Console.WriteLine("Ο Υπολογισμός για την Επίληση του <<Το πρόβλημα των 8 γρίφων>> ξεκίνησε......");
+            Console.WriteLine("Ο Υπολογισμός για την Επίληση του <<Το πρόβλημα των 8 γρίφων>> ξεκίνησε");
             Console.WriteLine("-----------------------------------------------------------------------------");
             Console.WriteLine("Υπολογισμός Βάρους κάθε Κίνηση με Βάση την Απόσταση απο την πραγματική Θέση που πρέπει να είναι ο Αριθμός");
+            Console.WriteLine("---------------------------------------------------------------------------------------------------------");
             //fill the tile with random number 0 - 8
-            this.initialState = FillPuzzle();
+            this.initialState = InitializePuzzle();
             IDAStarSearch();
         }
 
-        public int[,] FillPuzzle()
+        public int[,] InitializePuzzle()
         {
             int[,] initialState = new int[3, 3];
             Random rand = new Random();
@@ -58,14 +59,14 @@ namespace Puzzle
         [TestMethod]
         public void IDAStarSearch()
         {
+            int result = 0;
             int cost = CalculateHeuristic(initialState);
             Node root = new Node(initialState, cost, 0, null);
-
             int threshold = cost;
             while (true)
             {
                 Console.WriteLine($"Τρέχον Βάρος Βαση Απόστασης απο την Τελική Θέση: {threshold}");
-                int result = DepthLimitedSearch(root, threshold);
+                result = DepthLimitedSearch(root, threshold);
                 if (result == int.MaxValue)
                 {
                     Console.WriteLine("Solution not found!");
@@ -101,13 +102,11 @@ namespace Puzzle
             int f = node.Depth + CalculateHeuristic(node.State);
             if (f > threshold)
                 return f;
-
             if (IsGoalState(node.State))
             {
                 PrintSolution(node);
                 return -1; // Found solution
             }
-
             int min = int.MaxValue;
             foreach (var move in GetPossibleMoves(node.State))
             {
@@ -122,7 +121,6 @@ namespace Puzzle
                 if (result < min)
                     min = result;
             }
-
             return min;
         }
 
@@ -193,7 +191,6 @@ namespace Puzzle
                     }
                 }
             }
-
             foreach (var direction in directions)
             {
                 int newI = emptyRow + direction / state.GetLength(1);
@@ -225,10 +222,8 @@ namespace Puzzle
                 if (zeroIndexI != -1)
                     break;
             }
-
             newState[zeroIndexI, zeroIndexJ] = newState[newIndex[0], newIndex[1]];
             newState[newIndex[0], newIndex[1]] = 0;
-
             return newState;
         }
 
@@ -241,7 +236,6 @@ namespace Puzzle
                 path.Add(node);
                 node = node.Parent;
             }
-
             for (int i = path.Count - 1; i >= 0; i--)
             {
                 if (path.Count - i - 1 == 0)

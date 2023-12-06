@@ -13,12 +13,12 @@ namespace Puzzle
         public int Cost { get; }
         public int Depth { get; }
         public Node Parent { get; }
-        public Node(int[,] state, int cost, int depth, Node parent)
+        public Node(int[,] state, int cost, int depth, Node? parent)
         {
             State = state;
             Cost = cost;
             Depth = depth;
-            Parent = parent;
+            Parent = parent!;
         }
         public int CompareTo(Node other)
         {
