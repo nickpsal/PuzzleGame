@@ -60,6 +60,7 @@ namespace Puzzle
         public void IDAStarSearch()
         {
             int result = 0;
+            int maxValue = 10000;
             int cost = CalculateHeuristic(initialState);
             Node root = new Node(initialState, cost, 0, null);
             int threshold = cost;
@@ -67,7 +68,7 @@ namespace Puzzle
             {
                 Console.WriteLine($"Τρέχον Βάρος Βαση Απόστασης απο την Τελική Θέση: {threshold}");
                 result = DepthLimitedSearch(root, threshold);
-                if (result == int.MaxValue)
+                if (result == maxValue)
                 {
                     Console.WriteLine("Solution not found!");
                     return;
